@@ -137,7 +137,7 @@ void loop()
     hour = now.hour();
     minute = now.minute();
 
-    usekwh += (emontx.power1 * 0.2) / 3600000;
+    usekwh += ((emontx.power1 + emontx.power2) * 0.2) / 3600000;    // Adds Phase 1 and Phase 2 
     cval_use = cval_use + (emontx.power1 - cval_use)*0.50;
     
     draw_power_page( "POWER" ,cval_use, "USE", usekwh);
