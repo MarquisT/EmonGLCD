@@ -50,7 +50,7 @@ RTC_Millis RTC;
 //--------------------------------------------------------------------------------------------
 // RFM12B Settings
 //--------------------------------------------------------------------------------------------
-#define MYNODE 20            // Should be unique on network, node ID 30 reserved for base station
+#define MYNODE 29            // Should be unique on network, node ID 30 reserved for base station
 #define freq RF12_433MHZ     // frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define group 210 
 
@@ -139,9 +139,11 @@ void loop()
 
     
      //usekwh += (emontx.power1 * 0.2) / 3600000;
-    usekwh += ((emontx.power1 - emontx.power2)* 0.2) / 3600000; // used subtract to deal with the other negative phase
+   if(emontx.power1<0 || emontx.power2<0) usekwh += ((emontx.power1 - emontx.power2)* 0.2) / 3600000; // used subtract to deal with the other negative phase
+   else usekwh += ((emontx.power1 + emontx.power2)* 0.2) / 3600000;
     //cval_use = cval_use + (emontx.power1 - cval_use)*0.50;
-    cval_use = cval_use + ((emontx.power1 - emontx.power2) - cval_use)*0.50; // used subtract to deal with the other negative phase
+    if(emontx.power1<0 || emontx.power2<0) cval_use = cval_use + ((emontx.power1 - emontx.power2) - cval_use)*0.50; // used subtract to deal with the other negative phase
+    else cval_use = cval_use + ((emontx.power1 + emontx.power2) - cval_use)*0.50; // used subtract to deal with the other negative phase
    
     
     draw_power_page( "POWER" ,cval_use, "USE", usekwh);
@@ -158,14 +160,14 @@ void loop()
   {
     slow_update = millis();
 
-    sensors.requestTemperatures();
-    temp = (sensors.getTempCByIndex(0));
-    if (temp > maxtemp) maxtemp = temp;
-    if (temp < mintemp) mintemp = temp;
+    //sensors.requestTemperatures();
+    //temp = (sensors.getTempCByIndex(0));
+    //if (temp > maxtemp) maxtemp = temp;
+    //if (temp < mintemp) mintemp = temp;
    
-    emonglcd.temperature = (int) (temp * 100);                          // set emonglcd payload
-    int i = 0; while (!rf12_canSend() && i<10) {rf12_recvDone(); i++;}  // if ready to send + exit loop if it gets stuck as it seems too
-    rf12_sendStart(0, &emonglcd, sizeof emonglcd);                      // send emonglcd data
-    rf12_sendWait(0);    
+    //emonglcd.temperature = (int) (temp * 100);                          // set emonglcd payload
+    //int i = 0; while (!rf12_canSend() && i<10) {rf12_recvDone(); i++;}  // if ready to send + exit loop if it gets stuck as it seems too
+    //rf12_sendStart(0, &emonglcd, sizeof emonglcd);                      // send emonglcd data
+    //rf12_sendWait(0);    
   }
 }
